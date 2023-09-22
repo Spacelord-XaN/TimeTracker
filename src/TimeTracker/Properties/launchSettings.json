@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TimeTracker": {
+      "commandName": "Project",
+      "commandLineArgs": "log"
+    }
+  }
+}
