@@ -23,13 +23,42 @@ public class LogCommand
     {
         ArgumentNullException.ThrowIfNull(verb);
 
-        DateOnly day = _clock.GetCurrentDate();
-        if (verb.Date.HasValue)
+        DateOnly currentDate = _clock.GetCurrentDate();
+        DateTime? from = null;
+        DateTime? to = null;
+        if (verb.DayLogDate.HasValue)
         {
-            day = verb.Date.Value;
+            from = verb.DayLogDate.Value.StartOfDay();
+            to = verb.DayLogDate.Value.EndOfDay();
+        }
+        else if (verb.WeekLogDate.HasValue)
+        {
+            from = verb.WeekLogDate.Value.StartOfWeek();
+            to = verb.WeekLogDate.Value.EndOfWeek();
+        }
+        else if (verb.MonthLogDate.HasValue)
+        {
+            from = verb.MonthLogDate.Value.StartOfMonth();
+            to = verb.MonthLogDate.Value.EndOfMonth();
+        }
+        else if (verb.FromDate.HasValue || verb.ToDate.HasValue)
+        {
+            if (verb.FromDate.HasValue)
+            {
+                from = verb.FromDate.Value.StartOfDay();
+            }
+            if (verb.ToDate.HasValue)
+            {
+                to = verb.ToDate.Value.EndOfDay();
+            }
+        }
+        else
+        {
+            from = currentDate.StartOfDay();
+            to = currentDate.EndOfDay();
         }
 
-        IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>> entries = await _service.GetLogAsync(day);
+        IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>> entries = await _service.GetLogAsync(from, to);
 
         _ui.Log(entries);
     }

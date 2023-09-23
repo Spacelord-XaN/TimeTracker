@@ -17,10 +17,21 @@ public class DefaultTimeTrackerService
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
     }
 
-    public async Task<IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>>> GetLogAsync(DateOnly day)
+    public async Task<IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>>> GetLogAsync(DateTime? from, DateTime? to)
     {
-        IReadOnlyCollection<IGrouping<string, TimeEntry>> entriesByProject = await _db.Entries
-            .Where(entry => entry.End != null && entry.Start >= day.StartOfDay() && entry.End <= day.EndOfDay())
+        IQueryable<TimeEntry> entries = _db.Entries
+            .Where(entry => entry.End != null);
+
+        if (from.HasValue)
+        {
+            entries = entries.Where(entry => entry.Start >= from.Value);
+        }
+        if (to.HasValue)
+        {
+            entries = entries.Where(entry => entry.End.Value <= to.Value);
+        }
+
+        IReadOnlyCollection<IGrouping<string, TimeEntry>> entriesByProject = await entries
             .GroupBy(entry => entry.ProjectName)
             .ToArrayAsync();
 
