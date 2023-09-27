@@ -6,10 +6,10 @@ namespace Xan.TimeTracker.Verbs;
 public class LogVerb
 {
     [Option('d', "day", SetName = "dayLog")]
-    public DateOnly? DayLogDate { get; }
+    public DateOnly? DayLogDate { get; set; }
 
     [Option('w', "week", SetName = "weekLog")]
-    public  DateOnly? WeekLogDate { get; }
+    public  DateOnly? WeekLogDate { get; set; }
 
     [Option('m', "month", SetName = "monthLog")]
     public  DateOnly? MonthLogDate {get; set;}
