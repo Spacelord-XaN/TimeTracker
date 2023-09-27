@@ -2,7 +2,10 @@
   "profiles": {
     "TimeTracker": {
       "commandName": "Project",
-      "commandLineArgs": "log"
+      "commandLineArgs": "log",
+      "environmentVariables": {
+        "DatabaseFilePath": "temp.db"
+      }
     }
   }
 }

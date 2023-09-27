@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using Xan.Extensions;
@@ -75,14 +76,18 @@ public static class Program
 
     public static void ConfigureServices(IServiceCollection services)
     {
-        string dbFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "TimeTracker.db");
+        IConfigurationRoot config = new ConfigurationBuilder()
+            .AddEnvironmentVariables()
+            .Build();
+        Settings settings = config.Get<Settings>() ?? new Settings();
 
         services.AddDbContext<TimeTrackerDb>(options =>
         {
-            options.UseSqlite($"Data Source={dbFilePath}");
+            options.UseSqlite($"Data Source={settings.DatabaseFilePath}");
         });
 
         services
+            .AddSingleton<Settings>()
             .AddSingleton<IClock, SystemClock>()
             .AddScoped<ITimeTrackerService, DefaultTimeTrackerService>()
             .AddScoped<IUserInterface, ConsoleInterface>()
