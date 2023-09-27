@@ -1,6 +1,7 @@
 ﻿using CommandLine;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 using Xan.Extensions;
 using Xan.TimeTracker.Commands;
 using Xan.TimeTracker.Data;
@@ -23,6 +24,11 @@ public static class Program
 
         await Parser.Default.ParseArguments(args, verbs)
               .WithParsedAsync(RunAsync);
+
+        if (Debugger.IsAttached)
+        {
+            Console.ReadLine();
+        }
     }
 
     private static async Task RunAsync(object verb)
