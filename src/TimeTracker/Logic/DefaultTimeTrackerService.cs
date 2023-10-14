@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Drawing;
+using Microsoft.EntityFrameworkCore;
 using Xan.TimeTracker.Data;
 using Xan.TimeTracker.Models;
 
@@ -70,6 +71,15 @@ public class DefaultTimeTrackerService
         await _db.SaveChangesAsync();
 
         return entry;
+    }
+
+    public async Task<string[]> GetProjectsAsync()
+    {
+        return await _db.Entries
+            .Select(entry => entry.ProjectName)
+            .Distinct()
+            .OrderBy(project => project)
+            .ToArrayAsync();
     }
 
     public async Task<TimeEntry> StopAsync(DateTime timestamp)

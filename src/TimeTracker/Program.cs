@@ -18,6 +18,7 @@ public static class Program
         Type[] verbs = new[]
         {
             typeof (LogVerb),
+            typeof(ProjectVerb),
             typeof (StartVerb),
             typeof (StatusVerb),
             typeof (StopVerb)
@@ -37,6 +38,10 @@ public static class Program
         if (verb is LogVerb logVerb)
         {
             await RunCommandAsync<LogCommand, LogVerb>(logVerb);
+        }
+        else if (verb is ProjectVerb projectVerb)
+        {
+            await RunCommandAsync<ProjectCommand, ProjectVerb>(projectVerb);
         }
         else if (verb is StartVerb startVerb)
         {
@@ -92,6 +97,7 @@ public static class Program
             .AddScoped<ITimeTrackerService, DefaultTimeTrackerService>()
             .AddScoped<IUserInterface, ConsoleInterface>()
             .AddScoped<LogCommand>()
+            .AddScoped<ProjectCommand>()
             .AddScoped<StartCommand>()
             .AddScoped<StatusCommand>()
             .AddScoped<StopCommand>()

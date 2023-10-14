@@ -6,6 +6,8 @@ public interface IUserInterface
 {
     void Error(string message);
 
+    void ListProjects(string[] projects);
+
     void Log(IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>> entries);
 
     void StartedEntry(TimeEntry entry);

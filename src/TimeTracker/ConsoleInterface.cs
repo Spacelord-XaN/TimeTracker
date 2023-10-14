@@ -12,6 +12,16 @@ public class ConsoleInterface
         Console.WriteLine(message);
     }
 
+    public void ListProjects(string[] projects)
+    {
+        ArgumentNullException.ThrowIfNull(projects);
+
+        foreach (string project in projects)
+        {
+            Console.WriteLine(project);
+        }
+    }
+
     public void Log(IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
