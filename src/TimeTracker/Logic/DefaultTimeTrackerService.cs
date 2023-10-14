@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Xan.Extensions;
 using Xan.TimeTracker.Data;
 using Xan.TimeTracker.Models;
 
@@ -9,12 +8,10 @@ public class DefaultTimeTrackerService
     : ITimeTrackerService
 {
     private readonly TimeTrackerDb _db;
-    private readonly IClock _clock;
 
-    public DefaultTimeTrackerService(TimeTrackerDb db, IClock clock)
+    public DefaultTimeTrackerService(TimeTrackerDb db)
     {
         _db = db ?? throw new ArgumentNullException(nameof(db));
-        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
     }
 
     public async Task<IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>>> GetLogAsync(DateTime? from, DateTime? to)
@@ -58,7 +55,7 @@ public class DefaultTimeTrackerService
         return await _db.Entries.AnyAsync(entry => entry.End == null);
     }
 
-    public async Task<TimeEntry> StartAsync(string projectName)
+    public async Task<TimeEntry> StartAsync(DateTime timestamp, string projectName)
     {
         ArgumentNullException.ThrowIfNull(projectName);
 
@@ -66,7 +63,7 @@ public class DefaultTimeTrackerService
         {
             IsReviewed = false,
             ProjectName = projectName,
-            Start = _clock.GetCurrentDateTime()
+            Start = timestamp
         };
 
         _db.Entries.Add(entry);
@@ -75,11 +72,11 @@ public class DefaultTimeTrackerService
         return entry;
     }
 
-    public async Task<TimeEntry> StopAsync()
+    public async Task<TimeEntry> StopAsync(DateTime timestamp)
     {
         TimeEntry entry = await GetRunningAsync();
 
-        entry.End = _clock.GetCurrentDateTime();
+        entry.End = timestamp;
         await _db.SaveChangesAsync();
 
         return entry;

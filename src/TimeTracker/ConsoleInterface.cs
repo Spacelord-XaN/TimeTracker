@@ -5,6 +5,13 @@ namespace Xan.TimeTracker;
 public class ConsoleInterface
     : IUserInterface
 {
+    public void Error(string message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        Console.WriteLine(message);
+    }
+
     public void Log(IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);

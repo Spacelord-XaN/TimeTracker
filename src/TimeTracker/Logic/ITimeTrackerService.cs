@@ -4,9 +4,9 @@ namespace Xan.TimeTracker.Logic;
 
 public interface ITimeTrackerService
 {
-    Task<TimeEntry> StartAsync(string projectName);
+    Task<TimeEntry> StartAsync(DateTime timestamp, string projectName);
 
-    Task<TimeEntry> StopAsync();
+    Task<TimeEntry> StopAsync(DateTime timestamp);
 
     Task<bool> IsRunningAsync();
 
