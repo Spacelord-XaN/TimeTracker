@@ -58,8 +58,8 @@ public class LogCommand
             to = currentDate.EndOfDay();
         }
 
-        IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>> entries = await _service.GetLogAsync(from, to);
+        LogDetails logDetails = await _service.GetLogAsync(from, to);
 
-        _ui.Log(entries);
+        _ui.Log(logDetails);
     }
 }

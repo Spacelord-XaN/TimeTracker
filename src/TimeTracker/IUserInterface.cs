@@ -8,7 +8,7 @@ public interface IUserInterface
 
     void ListProjects(string[] projects);
 
-    void Log(IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>> entries);
+    void Log(LogDetails details);
 
     void StartedEntry(TimeEntry entry);
 

@@ -10,7 +10,7 @@ public interface ITimeTrackerService
 
     Task<bool> IsRunningAsync();
 
-    Task<IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>>> GetLogAsync(DateTime? from, DateTime? to);
+    Task<LogDetails> GetLogAsync(DateTime? from, DateTime? to);
 
     Task<string[]> GetProjectsAsync();
 

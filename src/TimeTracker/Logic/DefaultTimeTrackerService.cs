@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Xan.TimeTracker.Data;
 using Xan.TimeTracker.Models;
 
@@ -15,35 +14,54 @@ public class DefaultTimeTrackerService
         _db = db ?? throw new ArgumentNullException(nameof(db));
     }
 
-    public async Task<IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>>> GetLogAsync(DateTime? from, DateTime? to)
+    public async Task<LogDetails> GetLogAsync(DateTime? from, DateTime? to)
     {
-        IQueryable<TimeEntry> entries = _db.Entries
-            .Where(entry => entry.End != null);
+        IQueryable<TimeEntry> entriesQuery = _db.Entries;
 
         if (from.HasValue)
         {
-            entries = entries.Where(entry => entry.Start >= from.Value);
+            entriesQuery = entriesQuery.Where(entry => entry.Start >= from.Value);
         }
         if (to.HasValue)
         {
-            entries = entries.Where(entry => entry.End.Value <= to.Value);
+            entriesQuery = entriesQuery.Where(entry => entry.End == null || entry.End.Value <= to.Value);
         }
 
-        IReadOnlyCollection<IGrouping<string, TimeEntry>> entriesByProject = await entries
-            .GroupBy(entry => entry.ProjectName)
-            .ToArrayAsync();
-
-        Dictionary<DurationInfo, IReadOnlyCollection<TimeEntry>> result = new();
-
-        foreach (IGrouping<string, TimeEntry> group in entriesByProject)
+        IReadOnlyCollection<TimeEntry> entries = await entriesQuery.ToArrayAsync();
+        IEnumerable<IGrouping<DateTime, TimeEntry>> entriesByDay = entries.GroupBy(entry => entry.Start.Date);
+        List<DaySummary> daySummaries = new();
+        foreach (IGrouping<DateTime, TimeEntry> dayGroup in entriesByDay)
         {
-            TimeSpan duration = group.Aggregate(TimeSpan.Zero, (duration, entry) => duration.Add(entry.GetDuration()));
-            DurationInfo durationInfo = new(group.Key, duration);
+            IEnumerable<IGrouping<string, TimeEntry>> groupByProject = dayGroup.GroupBy(entry => entry.ProjectName);
 
-            result.Add(durationInfo, group.ToArray());
+            List<ProjectSummary> projectSummaries = new ();
+            foreach (IGrouping<string, TimeEntry> projectGroup in groupByProject)
+            {
+                List<Duration> projectDetails = new ();
+                TimeSpan projectTotalDuration = TimeSpan.Zero;
+                foreach (TimeEntry entry in projectGroup)
+                {
+                    TimeOnly start = TimeOnly.FromDateTime(entry.Start);
+                    TimeOnly? end = null;
+                    if (entry.End.HasValue)
+                    {
+                        end = TimeOnly.FromDateTime(entry.End.Value);
+                        projectTotalDuration = projectTotalDuration.Add(end.Value - start);
+                    }
+                    Duration duration = new (start, end);
+                    projectDetails.Add(duration);
+                }
+
+                ProjectSummary projectSummary = new (projectGroup.Key, projectTotalDuration, projectDetails);
+                projectSummaries.Add(projectSummary);
+            }
+
+            DateOnly date = DateOnly.FromDateTime(dayGroup.Key);
+            DaySummary daySummary = new (date, projectSummaries);
+            daySummaries.Add(daySummary);
         }
 
-        return result;
+        return new LogDetails(daySummaries);
     }
 
     public async Task<TimeEntry> GetRunningAsync()

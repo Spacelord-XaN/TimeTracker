@@ -22,17 +22,39 @@ public class ConsoleInterface
         }
     }
 
-    public void Log(IDictionary<DurationInfo, IReadOnlyCollection<TimeEntry>> entries)
+    public void Log(LogDetails details)
     {
-        ArgumentNullException.ThrowIfNull(entries);
+        ArgumentNullException.ThrowIfNull(details);
 
-        foreach (DurationInfo key in entries.Keys)
+        bool firstDay = true;
+        foreach (DaySummary daySummary in details.DaySummaries)
         {
-            Console.WriteLine($"Project {key.ProjectName} took {key.Duration.Hours:00}:{key.Duration.Minutes:00} or {key.Duration.TotalHours:0.00} h");
-
-            foreach (TimeEntry entry in entries[key])
+            if (firstDay)
             {
-                Console.WriteLine($"  {entry.Start:d}: {entry.Start:t} - {entry.End.Value:t}");
+                firstDay = false;
+            }
+            else
+            {
+                Console.WriteLine();
+            }
+
+            Console.WriteLine(daySummary.Date);
+            foreach (ProjectSummary projectSummary in daySummary.Projects)
+            {
+                Console.WriteLine($"  {projectSummary.Name} => {projectSummary.TotalDuration.Hours:00}:{projectSummary.TotalDuration.Minutes:00} or {projectSummary.TotalDuration.TotalHours:0.00} h");
+                foreach (Duration duration in projectSummary.Details)
+                {
+                    Console.Write("    ");
+                    if (duration.End.HasValue)
+                    {
+                        Write($"{duration.Start} - {duration.End.Value}", ConsoleColor.Green);
+                    }
+                    else
+                    {
+                        Write($"{duration.Start}", ConsoleColor.Red);
+                    }
+                    Console.WriteLine();
+                }
             }
         }
     }
@@ -54,5 +76,13 @@ public class ConsoleInterface
         ArgumentNullException.ThrowIfNull(entry);
 
         Console.WriteLine($"Stopped {entry.ProjectName}: {entry.Start} until {entry.End.Value}");
+    }
+
+    private static void Write(string message, ConsoleColor color)
+    {
+        ConsoleColor initialColor = Console.ForegroundColor;
+        Console.ForegroundColor = color;
+        Console.Write(message);
+        Console.ForegroundColor = initialColor;
     }
 }
