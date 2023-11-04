@@ -1,4 +1,5 @@
-﻿using System.CommandLine;
+﻿using Microsoft.EntityFrameworkCore;
+using System.CommandLine;
 using Xan.TimeTracker.Data;
 
 namespace Xan.TimeTracker.Commands;
@@ -11,9 +12,21 @@ public static class ProjectCommand
         listCommand.AddAlias("l");
         listCommand.SetHandler(ListAsync);
 
+        Argument<string> oldNameArgument = new("oldName");
+        Argument<string> newNameArgument = new("newName");
+
+        Command renameCommand = new("rename")
+        {
+            oldNameArgument,
+            newNameArgument
+        };
+        renameCommand.AddAlias("r");
+        renameCommand.SetHandler(RenameAsync, oldNameArgument, newNameArgument);
+
         return new("proj")
         {
-            listCommand
+            listCommand,
+            renameCommand
         };
     }
 
@@ -23,5 +36,14 @@ public static class ProjectCommand
         string[] projects = await db.GetProjectsAsync();
 
         ConsoleUi.ListProjects(projects);
+    }
+
+    private static async Task RenameAsync(string oldName, string newName)
+    {
+        TimeTrackerDb db = await Helpers.GetDbAsync();
+
+        await db.Entries
+            .Where(entry => entry.ProjectName == oldName)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(entry => entry.ProjectName, newName));
     }
 }
