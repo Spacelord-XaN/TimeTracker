@@ -84,6 +84,6 @@ public static class LogCommand
         TimeTrackerDb db = await Helpers.GetDbAsync();
         LogDetails logDetails = await db.GetLogAsync(from, to);
 
-        ConsoleUi.Log(logDetails);
+        ConsoleUi.Log(from, to, logDetails);
     }
 }

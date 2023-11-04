@@ -21,9 +21,24 @@ public class ConsoleUi
         }
     }
 
-    public static void Log(LogDetails details)
+    public static void Log(DateTime? from, DateTime? to, LogDetails details)
     {
         ArgumentNullException.ThrowIfNull(details);
+
+        if (from.HasValue || to.HasValue)
+        {
+            Console.Write("Range:");
+            if (from.HasValue)
+            {
+                Console.Write($" from {from.Value:f}");
+            }
+            if (to.HasValue)
+            {
+                Console.Write($" to {to.Value:f}");
+            }
+            Console.WriteLine();
+            Console.WriteLine();
+        }
 
         bool firstDay = true;
         foreach (DaySummary daySummary in details.DaySummaries)
