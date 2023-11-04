@@ -14,27 +14,32 @@ public static class LogCommand
         Option<DateOnly?> toOption = new("--to");
         toOption.AddAlias("-t");
         Argument<DateOnly?> dateArgument = new("date");
+        Option<string?> projectNameOption = new("--project");
+        projectNameOption.AddAlias("-p");
 
         Command dayCommand = new("day")
         {
-            dateArgument
+            dateArgument,
+            projectNameOption
         };
         dayCommand.AddAlias("d");
-        dayCommand.SetHandler(LogDayAsync, dateArgument);
+        dayCommand.SetHandler(LogDayAsync, dateArgument, projectNameOption);
 
         Command weekCommand = new("week")
         {
-            dateArgument
+            dateArgument,
+            projectNameOption
         };
         weekCommand.AddAlias("w");
-        weekCommand.SetHandler(LogWeekAsync, dateArgument);
+        weekCommand.SetHandler(LogWeekAsync, dateArgument, projectNameOption);
 
         Command monthCommand = new("month")
         {
-            dateArgument
+            dateArgument,
+            projectNameOption
         };
         monthCommand.AddAlias("m");
-        monthCommand.SetHandler(LogMonthAsync, dateArgument);
+        monthCommand.SetHandler(LogMonthAsync, dateArgument, projectNameOption);
 
         Command cmd = new("log")
         {
@@ -43,46 +48,47 @@ public static class LogCommand
             monthCommand,
 
             fromOption,
-            toOption
+            toOption,
+            projectNameOption
         };
-        cmd.SetHandler(LogAsync, fromOption, toOption);
+        cmd.SetHandler(LogAsync, fromOption, toOption, projectNameOption);
         return cmd;
     }
 
-    private static async Task LogDayAsync(DateOnly? date)
+    private static async Task LogDayAsync(DateOnly? date, string? projectName)
     {
         DateOnly theDay = date ?? DateOnly.FromDateTime(DateTime.Now);
         DateTime from = theDay.StartOfDay();
         DateTime to = theDay.EndOfDay();
 
-        await LogAsync(from, to);
+        await LogAsync(from, to, projectName);
     }
 
-    private static async Task LogWeekAsync(DateOnly? date)
+    private static async Task LogWeekAsync(DateOnly? date, string? projectName)
     {
         DateOnly theDay = date ?? DateOnly.FromDateTime(DateTime.Now);
         DateTime from = theDay.StartOfWeek();
         DateTime to = theDay.EndOfWeek();
 
-        await LogAsync(from, to);
+        await LogAsync(from, to, projectName);
     }
 
-    private static async Task LogMonthAsync(DateOnly? date)
+    private static async Task LogMonthAsync(DateOnly? date, string? projectName)
     {
         DateOnly theDay = date ?? DateOnly.FromDateTime(DateTime.Now);
         DateTime from = theDay.StartOfMonth();
         DateTime to = theDay.EndOfMonth();
 
-        await LogAsync(from, to);
+        await LogAsync(from, to, projectName);
     }
 
-    private static async Task LogAsync(DateOnly? from, DateOnly? to)
-        => await LogAsync(from?.StartOfDay(), to?.EndOfDay());
+    private static async Task LogAsync(DateOnly? from, DateOnly? to, string? projectName)
+        => await LogAsync(from?.StartOfDay(), to?.EndOfDay(), projectName);
 
-    private static async Task LogAsync(DateTime? from, DateTime? to)
+    private static async Task LogAsync(DateTime? from, DateTime? to, string? projectName)
     {
         TimeTrackerDb db = await Helpers.GetDbAsync();
-        LogDetails logDetails = await db.GetLogAsync(from, to);
+        LogDetails logDetails = await db.GetLogAsync(from, to, projectName);
 
         ConsoleUi.Log(from, to, logDetails);
     }

@@ -20,10 +20,14 @@ public class TimeTrackerDb
 
     public DbSet<TimeEntry> Entries { get; set; }
 
-    public async Task<LogDetails> GetLogAsync(DateTime? from, DateTime? to)
+    public async Task<LogDetails> GetLogAsync(DateTime? from, DateTime? to, string? projectName)
     {
         IQueryable<TimeEntry> entriesQuery = Entries;
 
+        if (projectName is not null)
+        {
+            entriesQuery = entriesQuery.Where(entry => entry.ProjectName == projectName);
+        }
         if (from.HasValue)
         {
             entriesQuery = entriesQuery.Where(entry => entry.Start >= from.Value);
