@@ -37,7 +37,7 @@ public class ConsoleUi
                 Console.WriteLine();
             }
 
-            Console.WriteLine(daySummary.Date);
+            Console.WriteLine($"{daySummary.Date} => {daySummary.TotalDuration.Hours:00}:{daySummary.TotalDuration.Minutes:00} or {daySummary.TotalDuration.TotalHours:0.00} h");
             foreach (ProjectSummary projectSummary in daySummary.Projects)
             {
                 Console.WriteLine($"  {projectSummary.Name} => {projectSummary.TotalDuration.Hours:00}:{projectSummary.TotalDuration.Minutes:00} or {projectSummary.TotalDuration.TotalHours:0.00} h");

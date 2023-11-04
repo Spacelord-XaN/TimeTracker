@@ -41,6 +41,7 @@ public class TimeTrackerDb
             IEnumerable<IGrouping<string, TimeEntry>> groupByProject = dayGroup.GroupBy(entry => entry.ProjectName);
 
             List<ProjectSummary> projectSummaries = new();
+            TimeSpan dayTotalDuration = TimeSpan.Zero;
             foreach (IGrouping<string, TimeEntry> projectGroup in groupByProject)
             {
                 List<Duration> projectDetails = new();
@@ -60,10 +61,12 @@ public class TimeTrackerDb
 
                 ProjectSummary projectSummary = new(projectGroup.Key, projectTotalDuration, projectDetails);
                 projectSummaries.Add(projectSummary);
+
+                dayTotalDuration += projectTotalDuration;
             }
 
             DateOnly date = DateOnly.FromDateTime(dayGroup.Key);
-            DaySummary daySummary = new(date, projectSummaries);
+            DaySummary daySummary = new(date, dayTotalDuration, projectSummaries);
             daySummaries.Add(daySummary);
         }
 
