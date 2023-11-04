@@ -30,7 +30,7 @@ public class TimeTrackerDb
         }
         if (to.HasValue)
         {
-            entriesQuery = entriesQuery.Where(entry => entry.End == null || entry.End.Value <= to.Value);
+            entriesQuery = entriesQuery.Where(entry => (entry.End == null && entry.Start <= to) || (entry.End != null && entry.End.Value <= to.Value));
         }
 
         IReadOnlyCollection<TimeEntry> entries = await entriesQuery.ToArrayAsync();
