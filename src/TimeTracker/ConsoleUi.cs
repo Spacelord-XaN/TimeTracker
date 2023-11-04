@@ -55,24 +55,28 @@ public class ConsoleUi
             Console.WriteLine($"{daySummary.Date} => {daySummary.TotalDuration.Hours:00}:{daySummary.TotalDuration.Minutes:00} or {daySummary.TotalDuration.TotalHours:0.00} h");
             foreach (ProjectSummary projectSummary in daySummary.Projects)
             {
-                Console.WriteLine($"  {projectSummary.Name} => {projectSummary.TotalDuration.Hours:00}:{projectSummary.TotalDuration.Minutes:00} or {projectSummary.TotalDuration.TotalHours:0.00} h");
-                foreach (Duration duration in projectSummary.Details)
+                Console.WriteLine($"  Project: {projectSummary.Name} => {projectSummary.TotalDuration.Hours:00}:{projectSummary.TotalDuration.Minutes:00} or {projectSummary.TotalDuration.TotalHours:0.00} h");
+                foreach (CommentSummary commentSummary in projectSummary.Details)
                 {
-                    Console.Write("    ");
-                    if (duration.End.HasValue)
+                    Console.WriteLine($"    Comment: {commentSummary.Comment} => {commentSummary.TotalDuration.Hours:00}:{commentSummary.TotalDuration.Minutes:00} or {commentSummary.TotalDuration.TotalHours:0.00} h");
+                    foreach (Duration duration in commentSummary.Details)
                     {
-                        Write($"{duration.Start} - {duration.End.Value}", ConsoleColor.Green);
-                    }
-                    else
-                    {
-                        Write($"{duration.Start}", ConsoleColor.Red);
-                    }
+                        Console.Write("      ");
+                        if (duration.End.HasValue)
+                        {
+                            Write($"{duration.Start} - {duration.End.Value}", ConsoleColor.Green);
+                        }
+                        else
+                        {
+                            Write($"{duration.Start}", ConsoleColor.Red);
+                        }
 
-                    if (duration.Comment is not null)
-                    {
-                        Console.Write($": {duration.Comment}");
+                        if (duration.Comment is not null)
+                        {
+                            Console.Write($": {duration.Comment}");
+                        }
+                        Console.WriteLine();
                     }
-                    Console.WriteLine();
                 }
             }
         }

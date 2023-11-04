@@ -44,26 +44,39 @@ public class TimeTrackerDb
             TimeSpan dayTotalDuration = TimeSpan.Zero;
             foreach (IGrouping<string, TimeEntry> projectGroup in groupByProject)
             {
-                List<Duration> projectDetails = new();
-                TimeSpan projectTotalDuration = TimeSpan.Zero;
-                foreach (TimeEntry entry in projectGroup)
+                List<CommentSummary> commentSummaries = new();
+                TimeSpan projectTotalDuration = TimeSpan.Zero;                
+
+                IEnumerable<IGrouping<string?, TimeEntry>> commentGroups = projectGroup.GroupBy(entry => entry.Comment);
+                foreach (IGrouping<string?, TimeEntry> commentGroup in commentGroups)
                 {
-                    TimeOnly start = TimeOnly.FromDateTime(entry.Start);
-                    TimeOnly? end = null;
-                    if (entry.End.HasValue)
+                    List<Duration> commentDetails = new();
+                    TimeSpan commentTotalDuration = TimeSpan.Zero;
+
+                    foreach (TimeEntry entry in commentGroup)
                     {
-                        end = TimeOnly.FromDateTime(entry.End.Value);
-                        projectTotalDuration = projectTotalDuration.Add(end.Value - start);
+                        TimeOnly start = TimeOnly.FromDateTime(entry.Start);
+                        TimeOnly? end = null;
+                        if (entry.End.HasValue)
+                        {
+                            end = TimeOnly.FromDateTime(entry.End.Value);
+
+                            TimeSpan timeSpan = end.Value - start;
+                            commentTotalDuration += timeSpan;
+                            projectTotalDuration += timeSpan;
+                            dayTotalDuration += timeSpan;
+                        }
+
+                        Duration duration = new(start, end, entry.Comment);
+                        commentDetails.Add(duration);
                     }
 
-                    Duration duration = new(start, end, entry.Comment);
-                    projectDetails.Add(duration);
+                    CommentSummary commentSummary = new(commentGroup.Key ?? string.Empty, commentTotalDuration, commentDetails);
+                    commentSummaries.Add(commentSummary);
                 }
 
-                ProjectSummary projectSummary = new(projectGroup.Key, projectTotalDuration, projectDetails);
+                ProjectSummary projectSummary = new(projectGroup.Key, projectTotalDuration, commentSummaries);
                 projectSummaries.Add(projectSummary);
-
-                dayTotalDuration += projectTotalDuration;
             }
 
             DateOnly date = DateOnly.FromDateTime(dayGroup.Key);
