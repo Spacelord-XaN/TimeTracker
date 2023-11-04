@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.CommandLine;
 using Xan.TimeTracker.Data;
+using Xan.TimeTracker.Models;
 
 namespace Xan.TimeTracker.Commands;
 
@@ -8,9 +9,18 @@ public static class ProjectCommand
 {
     public static Command Build()
     {
-        Command listCommand = new("list");
+        Option<bool> commentsOption = new("--comments");
+        commentsOption.AddAlias("-c");
+        Option<string?> projectNameOption = new("--project");
+        projectNameOption.AddAlias("-p");
+
+        Command listCommand = new("list")
+        {
+            commentsOption,
+            projectNameOption
+        };
         listCommand.AddAlias("l");
-        listCommand.SetHandler(ListAsync);
+        listCommand.SetHandler(ListAsync, commentsOption, projectNameOption);
 
         Argument<string> oldNameArgument = new("oldName");
         Argument<string> newNameArgument = new("newName");
@@ -30,12 +40,42 @@ public static class ProjectCommand
         };
     }
 
-    private static async Task ListAsync()
+    private static async Task ListAsync(bool includeComments, string? projectName)
     {
         TimeTrackerDb db = await Helpers.GetDbAsync();
-        string[] projects = await db.GetProjectsAsync();
 
-        ConsoleUi.ListProjects(projects);
+        IQueryable<TimeEntry> entries = db.Entries;
+        if (projectName is not null)
+        {
+            entries = entries.Where(entry => entry.ProjectName == projectName);
+        }
+
+        List<ListProjectsModel> result;
+        if (includeComments)
+        {
+            result = new List<ListProjectsModel>();
+
+            TimeEntry[] allEntries = await entries.ToArrayAsync();
+            foreach (IGrouping<string, TimeEntry> projectGroup in allEntries.GroupBy(entry => entry.ProjectName))
+            {
+                IEnumerable<string> comments = projectGroup.Select(entry => entry.Comment ?? string.Empty).Distinct().Order();
+                ListProjectsModel project = new(projectGroup.Key, comments.ToArray());
+
+                result.Add(project);
+            }
+        }
+        else
+        {
+            string[] projects = await entries
+                .Select(entry => entry.ProjectName)
+                .Distinct()
+                .OrderBy(project => project)
+                .ToArrayAsync();
+
+            result = new List<ListProjectsModel>(projects.Select(projectName => new ListProjectsModel(projectName, Array.Empty<string>())));
+        }
+
+        ConsoleUi.ListProjects(result);
     }
 
     private static async Task RenameAsync(string oldName, string newName)

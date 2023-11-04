@@ -11,13 +11,17 @@ public class ConsoleUi
         Console.WriteLine(message);
     }
 
-    public static void ListProjects(string[] projects)
+    public static void ListProjects(IReadOnlyCollection<ListProjectsModel> projects)
     {
         ArgumentNullException.ThrowIfNull(projects);
 
-        foreach (string project in projects)
+        foreach (ListProjectsModel project in projects)
         {
-            Console.WriteLine(project);
+            Console.WriteLine(project.Name);
+            foreach (string comment in project.Comments)
+            {
+                Console.WriteLine($"  {comment}");
+            }
         }
     }
 

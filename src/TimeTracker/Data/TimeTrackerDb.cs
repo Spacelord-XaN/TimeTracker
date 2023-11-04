@@ -97,15 +97,6 @@ public class TimeTrackerDb
         return await Entries.AnyAsync(entry => entry.End == null);
     }
 
-    public async Task<string[]> GetProjectsAsync()
-    {
-        return await Entries
-            .Select(entry => entry.ProjectName)
-            .Distinct()
-            .OrderBy(project => project)
-            .ToArrayAsync();
-    }
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
