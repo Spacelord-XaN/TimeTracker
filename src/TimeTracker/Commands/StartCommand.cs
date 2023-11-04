@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using Xan.Extensions;
 using Xan.TimeTracker.Data;
 using Xan.TimeTracker.Models;
 
@@ -14,19 +13,22 @@ public static class StartCommand
         dateOption.AddAlias("-d");
         Option<TimeOnly?> timeOption = new("--time");
         timeOption.AddAlias("-t");
+        Option<string?> commentOption = new("--comment");
+        commentOption.AddAlias("-c");
 
         Command cmd = new("start")
         {
             projectNameArgument,
             dateOption,
-            timeOption
+            timeOption,
+            commentOption
         };
-        cmd.SetHandler(StartAsync, projectNameArgument, dateOption, timeOption);
+        cmd.SetHandler(StartAsync, projectNameArgument, dateOption, timeOption, commentOption);
 
         return cmd;
     }
 
-    private static async Task StartAsync(string projectName, DateOnly? date, TimeOnly? time)
+    private static async Task StartAsync(string projectName, DateOnly? date, TimeOnly? time, string? comment)
     {
         ArgumentNullException.ThrowIfNull(projectName);
 
@@ -40,7 +42,7 @@ public static class StartCommand
         DateTime timestamp = Helpers.GetTimestamp(date, time);
         TimeEntry entry = new()
         {
-            IsReviewed = false,
+            Comment = comment,
             ProjectName = projectName,
             Start = timestamp
         };

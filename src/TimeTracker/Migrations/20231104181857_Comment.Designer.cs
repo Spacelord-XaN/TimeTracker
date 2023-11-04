@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Xan.TimeTracker.Data;
 
@@ -10,9 +11,11 @@ using Xan.TimeTracker.Data;
 namespace Xan.TimeTracker.Migrations
 {
     [DbContext(typeof(TimeTrackerDb))]
-    partial class TimeTrackerDbModelSnapshot : ModelSnapshot
+    [Migration("20231104181857_Comment")]
+    partial class Comment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.13");

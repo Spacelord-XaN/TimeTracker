@@ -11,7 +11,7 @@ public class TimeEntry
 
     public DateTime? End { get; set; }
 
-    public bool IsReviewed { get; set; }
+    public string? Comment { get; set; }
 
     public TimeSpan GetDuration()
         => End.Value - Start;

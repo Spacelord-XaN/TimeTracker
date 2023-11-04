@@ -52,6 +52,11 @@ public class ConsoleUi
                     {
                         Write($"{duration.Start}", ConsoleColor.Red);
                     }
+
+                    if (duration.Comment is not null)
+                    {
+                        Console.Write($": {duration.Comment}");
+                    }
                     Console.WriteLine();
                 }
             }
@@ -67,7 +72,12 @@ public class ConsoleUi
 
     public static void Status(TimeEntry entry)
     {
-        Console.WriteLine($"{entry.ProjectName} started at {entry.Start}");
+        Console.Write($"{entry.ProjectName} started at {entry.Start}");
+        if (entry.Comment is not null)
+        {
+            Console.Write($": {entry.Comment}");
+        }
+        Console.WriteLine();
     }
 
     public static void StoppedEntry(TimeEntry entry)

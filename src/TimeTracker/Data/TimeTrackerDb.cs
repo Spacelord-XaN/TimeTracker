@@ -55,7 +55,8 @@ public class TimeTrackerDb
                         end = TimeOnly.FromDateTime(entry.End.Value);
                         projectTotalDuration = projectTotalDuration.Add(end.Value - start);
                     }
-                    Duration duration = new(start, end);
+
+                    Duration duration = new(start, end, entry.Comment);
                     projectDetails.Add(duration);
                 }
 

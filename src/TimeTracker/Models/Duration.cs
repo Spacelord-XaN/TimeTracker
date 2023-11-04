@@ -2,5 +2,6 @@
 
 public record Duration(
     TimeOnly Start,
-    TimeOnly? End
+    TimeOnly? End,
+    string? Comment
 );
