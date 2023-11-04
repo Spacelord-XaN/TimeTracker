@@ -1,65 +1,89 @@
-﻿using Xan.Extensions;
-using Xan.TimeTracker.Logic;
+﻿using System.CommandLine;
+using Xan.Extensions;
+using Xan.TimeTracker.Data;
 using Xan.TimeTracker.Models;
-using Xan.TimeTracker.Verbs;
 
 namespace Xan.TimeTracker.Commands;
 
-public class LogCommand
-    : ICommand<LogVerb>
+public static class LogCommand
 {
-    private readonly ITimeTrackerService _service;
-    private readonly IUserInterface _ui;
-    private readonly IClock _clock;
-
-    public LogCommand(ITimeTrackerService service, IUserInterface ui, IClock clock)
+    public static Command Build()
     {
-        _service = service ?? throw new ArgumentNullException(nameof(service));
-        _ui = ui ?? throw new ArgumentNullException(nameof(ui));
-        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+        Option<DateOnly?> fromOption = new("--from");
+        fromOption.AddAlias("-f");
+        Option<DateOnly?> toOption = new("--to");
+        toOption.AddAlias("-t");
+        Argument<DateOnly?> dateArgument = new("date");
+
+        Command dayCommand = new("day")
+        {
+            dateArgument
+        };
+        dayCommand.AddAlias("d");
+        dayCommand.SetHandler(LogDayAsync, dateArgument);
+
+        Command weekCommand = new("week")
+        {
+            dateArgument
+        };
+        weekCommand.AddAlias("w");
+        weekCommand.SetHandler(LogWeekAsync, dateArgument);
+
+        Command monthCommand = new("month")
+        {
+            dateArgument
+        };
+        monthCommand.AddAlias("m");
+        monthCommand.SetHandler(LogMonthAsync, dateArgument);
+
+        Command cmd = new("log")
+        {
+            dayCommand,
+            weekCommand,
+            monthCommand,
+
+            fromOption,
+            toOption
+        };
+        cmd.SetHandler(LogAsync, fromOption, toOption);
+        return cmd;
     }
 
-    public async Task RunAsnc(LogVerb verb)
+    private static async Task LogDayAsync(DateOnly? date)
     {
-        ArgumentNullException.ThrowIfNull(verb);
+        DateOnly theDay = date ?? DateOnly.FromDateTime(DateTime.Now);
+        DateTime from = theDay.StartOfDay();
+        DateTime to = theDay.EndOfDay();
 
-        DateOnly currentDate = _clock.GetCurrentDate();
-        DateTime? from = null;
-        DateTime? to = null;
-        if (verb.DayLogDate.HasValue)
-        {
-            from = verb.DayLogDate.Value.StartOfDay();
-            to = verb.DayLogDate.Value.EndOfDay();
-        }
-        else if (verb.WeekLogDate.HasValue)
-        {
-            from = verb.WeekLogDate.Value.StartOfWeek();
-            to = verb.WeekLogDate.Value.EndOfWeek();
-        }
-        else if (verb.MonthLogDate.HasValue)
-        {
-            from = verb.MonthLogDate.Value.StartOfMonth();
-            to = verb.MonthLogDate.Value.EndOfMonth();
-        }
-        else if (verb.FromDate.HasValue || verb.ToDate.HasValue)
-        {
-            if (verb.FromDate.HasValue)
-            {
-                from = verb.FromDate.Value.StartOfDay();
-            }
-            if (verb.ToDate.HasValue)
-            {
-                to = verb.ToDate.Value.EndOfDay();
-            }
-        }
-        else
-        {
-            from = currentDate.StartOfDay();
-            to = currentDate.EndOfDay();
-        }
+        await LogAsync(from, to);
+    }
 
-        LogDetails logDetails = await _service.GetLogAsync(from, to);
+    private static async Task LogWeekAsync(DateOnly? date)
+    {
+        DateOnly theDay = date ?? DateOnly.FromDateTime(DateTime.Now);
+        DateTime from = theDay.StartOfWeek();
+        DateTime to = theDay.EndOfWeek();
 
-        _ui.Log(logDetails);
+        await LogAsync(from, to);
+    }
+
+    private static async Task LogMonthAsync(DateOnly? date)
+    {
+        DateOnly theDay = date ?? DateOnly.FromDateTime(DateTime.Now);
+        DateTime from = theDay.StartOfMonth();
+        DateTime to = theDay.EndOfMonth();
+
+        await LogAsync(from, to);
+    }
+
+    private static async Task LogAsync(DateOnly? from, DateOnly? to)
+        => await LogAsync(from?.StartOfDay(), to?.EndOfDay());
+
+    private static async Task LogAsync(DateTime? from, DateTime? to)
+    {
+        TimeTrackerDb db = await Helpers.GetDbAsync();
+        LogDetails logDetails = await db.GetLogAsync(from, to);
+
+        ConsoleUi.Log(logDetails);
     }
 }

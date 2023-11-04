@@ -1,45 +1,53 @@
-﻿using Xan.Extensions;
-using Xan.TimeTracker.Logic;
+﻿using System.CommandLine;
+using Xan.Extensions;
+using Xan.TimeTracker.Data;
 using Xan.TimeTracker.Models;
-using Xan.TimeTracker.Verbs;
 
 namespace Xan.TimeTracker.Commands;
 
-public class StartCommand
-    : ICommand<StartVerb>
+public static class StartCommand
 {
-    private readonly ITimeTrackerService _service;
-    private readonly IUserInterface _ui;
-    private readonly IClock _clock;
-
-    public StartCommand(ITimeTrackerService service, IUserInterface ui, IClock clock)
+    public static Command Build()
     {
-        _service = service ?? throw new ArgumentNullException(nameof(service));
-        _ui = ui ?? throw new ArgumentNullException(nameof(ui));
-        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+        Argument<string> projectNameArgument = new("projectName");
+        Option<DateOnly?> dateOption = new("--date");
+        dateOption.AddAlias("-d");
+        Option<TimeOnly?> timeOption = new("--time");
+        timeOption.AddAlias("-t");
+
+        Command cmd = new("start")
+        {
+            projectNameArgument,
+            dateOption,
+            timeOption
+        };
+        cmd.SetHandler(StartAsync, projectNameArgument, dateOption, timeOption);
+
+        return cmd;
     }
 
-    public async Task RunAsnc(StartVerb verb)
+    private static async Task StartAsync(string projectName, DateOnly? date, TimeOnly? time)
     {
-        ArgumentNullException.ThrowIfNull(verb);
+        ArgumentNullException.ThrowIfNull(projectName);
 
-        if (await _service.IsRunningAsync())
+        TimeTrackerDb db = await Helpers.GetDbAsync();
+        if (await db.IsRunningAsync())
         {
-            _ui.Error("Cannot start while running.");
+            ConsoleUi.Error("Cannot start while running.");
             return;
         }
 
-        DateTime startTimestamp = _clock.GetCurrentDateTime();
-        if (verb.Date.HasValue)
+        DateTime timestamp = Helpers.GetTimestamp(date, time);
+        TimeEntry entry = new()
         {
-            startTimestamp = startTimestamp.Combine(verb.Date.Value);
-        }
-        if (verb.Time.HasValue)
-        {
-            startTimestamp = startTimestamp.Combine(verb.Time.Value);
-        }
+            IsReviewed = false,
+            ProjectName = projectName,
+            Start = timestamp
+        };
 
-        TimeEntry startedEntry = await _service.StartAsync(startTimestamp, verb.ProjectName);
-        _ui.StartedEntry(startedEntry);
+        db.Entries.Add(entry);
+        await db.SaveChangesAsync();
+
+        ConsoleUi.StartedEntry(entry);
     }
 }

@@ -1,32 +1,27 @@
-﻿using Xan.TimeTracker.Logic;
-using Xan.TimeTracker.Verbs;
+﻿using System.CommandLine;
+using Xan.TimeTracker.Data;
 
 namespace Xan.TimeTracker.Commands;
 
-public class ProjectCommand
-    : ICommand<ProjectVerb>
+public static class ProjectCommand
 {
-    private readonly ITimeTrackerService _service;
-    private readonly IUserInterface _ui;
-
-    public ProjectCommand(ITimeTrackerService service, IUserInterface ui)
+    public static Command Build()
     {
-        _service = service ?? throw new ArgumentNullException(nameof(service));
-        _ui = ui ?? throw new ArgumentNullException(nameof(ui));
+        Command listCommand = new("list");
+        listCommand.AddAlias("l");
+        listCommand.SetHandler(ListAsync);
+
+        return new("proj")
+        {
+            listCommand
+        };
     }
 
-    public async Task RunAsnc(ProjectVerb verb)
+    private static async Task ListAsync()
     {
-        ArgumentNullException.ThrowIfNull(verb);
+        TimeTrackerDb db = await Helpers.GetDbAsync();
+        string[] projects = await db.GetProjectsAsync();
 
-        if (verb.List)
-        {
-            string[] projects = await _service.GetProjectsAsync();
-            _ui.ListProjects(projects);
-        }
-        else
-        {
-            _ui.Error("Invalid options specified");
-        }
+        ConsoleUi.ListProjects(projects);
     }
 }

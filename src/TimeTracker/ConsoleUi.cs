@@ -2,17 +2,16 @@
 
 namespace Xan.TimeTracker;
 
-public class ConsoleInterface
-    : IUserInterface
+public class ConsoleUi
 {
-    public void Error(string message)
+    public static void Error(string message)
     {
         ArgumentNullException.ThrowIfNull(message);
 
         Console.WriteLine(message);
     }
 
-    public void ListProjects(string[] projects)
+    public static void ListProjects(string[] projects)
     {
         ArgumentNullException.ThrowIfNull(projects);
 
@@ -22,7 +21,7 @@ public class ConsoleInterface
         }
     }
 
-    public void Log(LogDetails details)
+    public static void Log(LogDetails details)
     {
         ArgumentNullException.ThrowIfNull(details);
 
@@ -59,21 +58,22 @@ public class ConsoleInterface
         }
     }
 
-    public void StartedEntry(TimeEntry entry)
+    public static void StartedEntry(TimeEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
         Console.WriteLine($"Started {entry.ProjectName} at {entry.Start}");
     }
 
-    public void Status(TimeEntry entry)
+    public static void Status(TimeEntry entry)
     {
         Console.WriteLine($"{entry.ProjectName} started at {entry.Start}");
     }
 
-    public void StoppedEntry(TimeEntry entry)
+    public static void StoppedEntry(TimeEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(entry.End);
 
         Console.WriteLine($"Stopped {entry.ProjectName}: {entry.Start} until {entry.End.Value}");
     }

@@ -1,42 +1,41 @@
-﻿using Xan.Extensions;
-using Xan.TimeTracker.Logic;
+﻿using System.CommandLine;
+using Xan.TimeTracker.Data;
 using Xan.TimeTracker.Models;
-using Xan.TimeTracker.Verbs;
 
 namespace Xan.TimeTracker.Commands;
 
-public class StopCommand
-    : ICommand<StopVerb>
+public static class StopCommand
 {
-    private readonly ITimeTrackerService _service;
-    private readonly IUserInterface _ui;
-    private readonly IClock _clock;
-
-    public StopCommand(ITimeTrackerService service, IUserInterface ui, IClock clock)
+    public static Command Build()
     {
-        _service = service ?? throw new ArgumentNullException(nameof(service));
-        _ui = ui ?? throw new ArgumentNullException(nameof(ui));
-        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+        Option<DateOnly?> dateOption = new("--date");
+        dateOption.AddAlias("-d");
+        Option<TimeOnly?> timeOption = new("--time");
+        timeOption.AddAlias("-t");
+
+        Command cmd = new("stop")
+        {
+            dateOption,
+            timeOption
+        };
+        cmd.SetHandler(StatusAsync, dateOption, timeOption);
+
+        return cmd;
     }
 
-    public async Task RunAsnc(StopVerb verb)
+    private static async Task StatusAsync(DateOnly? date, TimeOnly? time)
     {
-        ArgumentNullException.ThrowIfNull(verb);
-
-        if (await _service.IsRunningAsync())
+        TimeTrackerDb db = await Helpers.GetDbAsync();
+        if (await db.IsRunningAsync())
         {
-            DateTime stopTimestamp = _clock.GetCurrentDateTime();
-            if (verb.Date.HasValue)
-            {
-                stopTimestamp = stopTimestamp.Combine(verb.Date.Value);
-            }
-            if (verb.Time.HasValue)
-            {
-                stopTimestamp = stopTimestamp.Combine(verb.Time.Value);
-            }
+            DateTime timestamp = Helpers.GetTimestamp(date, time);
 
-            TimeEntry stoppedEntry = await _service.StopAsync(stopTimestamp);
-            _ui.StoppedEntry(stoppedEntry);
+            TimeEntry entry = await db.GetRunningAsync();
+
+            entry.End = timestamp;
+            await db.SaveChangesAsync();
+
+            ConsoleUi.StoppedEntry(entry);
         }
     }
 }
