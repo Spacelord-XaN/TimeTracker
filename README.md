@@ -3,11 +3,11 @@ A small C# console application for simple time tracking
 
 ## Usage
 ```
-tt start <projectName> -d YYYY-MM-DD -t hh:mm[:ss]
+tt start <projectName> -d YYYY-MM-DD -t hh:mm[:ss] -c <comment>
 ```
-Starts tracking a new project with the given name and the specified date and time.
+Starts tracking a new project with the given name and the specified date and time and comment.
 \
-The -d and -t parameters are optional.
+The -d, -t and -c parameters are optional.
 
 ```
 tt stop -d YYYY-MM-DD -t hh:mm[:ss]
@@ -23,9 +23,12 @@ If a project is tracking, it prints out the name and starting time stamp of the 
 If no project is tracking, it prints out nothing
 
 ```
-tt log -d YYYY-MM-DD
-tt log -w YYYY-MM-DD
-tt log -m YYYY-MM-DD
+tt log day YYYY-MM-DD
+tt log d YYYY-MM-DD
+tt log week YYYY-MM-DD
+tt log w YYYY-MM-DD
+tt log month YYYY-MM-DD
+tt log m YYYY-MM-DD
 tt log --from YYYY-MM-DD
 tt log --to YYYY-MM-DD
 tr log --from YYYY-MM-DD --to YYYY-MM-DD
@@ -36,9 +39,16 @@ Prints out a summary of all tracked projects for the specified time span:
 - m Month 
 
 ```
-tt proj -l
+tt proj list
+tt proj l
 ```
 Lists all projects.
+
+```
+tt proj rename <oldName> <newName>
+tt proj r <oldName> <newName>
+```
+Renames a project.
 
 ### Remarks
 Currently only one project at a time can be tracked.
@@ -47,5 +57,4 @@ The data is stored in a SQLite database named TimeTrackder.db in the users profi
 SpecialFolder.UserProfile (https://learn.microsoft.com/en-us/dotnet/api/system.environment.specialfolder?view=net-7.0)
 
 ## Roadmap
-- Renaming of projects
-- Improve output (colors, format)
+- Interactive UI
