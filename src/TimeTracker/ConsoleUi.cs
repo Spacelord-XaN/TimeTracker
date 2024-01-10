@@ -59,10 +59,15 @@ public class ConsoleUi
             Console.WriteLine($"{daySummary.Date} => {daySummary.TotalDuration.Hours:00}:{daySummary.TotalDuration.Minutes:00} or {daySummary.TotalDuration.TotalHours:0.00} h");
             foreach (ProjectSummary projectSummary in daySummary.Projects)
             {
-                Console.WriteLine($"  Project: {projectSummary.Name} => {projectSummary.TotalDuration.Hours:00}:{projectSummary.TotalDuration.Minutes:00} or {projectSummary.TotalDuration.TotalHours:0.00} h");
+                Console.WriteLine($"  {projectSummary.Name} => {projectSummary.TotalDuration.Hours:00}:{projectSummary.TotalDuration.Minutes:00} or {projectSummary.TotalDuration.TotalHours:0.00} h");
                 foreach (CommentSummary commentSummary in projectSummary.Details)
                 {
-                    Console.WriteLine($"    Comment: {commentSummary.Comment} => {commentSummary.TotalDuration.Hours:00}:{commentSummary.TotalDuration.Minutes:00} or {commentSummary.TotalDuration.TotalHours:0.00} h");
+                    string commentPart = "";
+                    if (!string.IsNullOrEmpty(commentSummary.Comment))
+                    {
+                        commentPart = $"{commentSummary.Comment} => ";
+                    }
+                    Console.WriteLine($"    {commentPart}{commentSummary.TotalDuration.Hours:00}:{commentSummary.TotalDuration.Minutes:00} or {commentSummary.TotalDuration.TotalHours:0.00} h");
                     foreach (Duration duration in commentSummary.Details)
                     {
                         Console.Write("      ");
@@ -82,7 +87,9 @@ public class ConsoleUi
                         Console.WriteLine();
                     }
                 }
+                Console.WriteLine();
             }
+            WriteSingleCharLine('-');
         }
     }
 
@@ -95,12 +102,14 @@ public class ConsoleUi
 
     public static void Status(TimeEntry entry)
     {
-        Console.Write($"{entry.ProjectName} started at {entry.Start}");
+        ArgumentNullException.ThrowIfNull(entry);
+
+        Console.WriteLine(entry.ProjectName);
+        Console.WriteLine($"Start: {entry.Start}");
         if (entry.Comment is not null)
         {
-            Console.Write($": {entry.Comment}");
+            Console.WriteLine($": {entry.Comment}");
         }
-        Console.WriteLine();
     }
 
     public static void StoppedEntry(TimeEntry entry)
@@ -117,5 +126,11 @@ public class ConsoleUi
         Console.ForegroundColor = color;
         Console.Write(message);
         Console.ForegroundColor = initialColor;
+    }
+    
+    private static void WriteSingleCharLine(char c)
+    {
+        string line = new string(Enumerable.Range(0, Console.BufferWidth).Select(_ => c).ToArray());
+        Console.WriteLine(line);
     }
 }
