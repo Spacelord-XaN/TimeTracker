@@ -15,6 +15,7 @@ public static class Program
             StartCommand.Build(),
             StatusCommand.Build(),
             StopCommand.Build(),
+            ResumeCommand.Build()
         };
         await rootCommand.InvokeAsync(args);
 
