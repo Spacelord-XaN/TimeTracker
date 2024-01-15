@@ -1,4 +1,5 @@
-﻿using Xan.TimeTracker.Models;
+﻿using Spectre.Console;
+using Xan.TimeTracker.Models;
 
 namespace Xan.TimeTracker;
 
@@ -91,6 +92,16 @@ public class ConsoleUi
             }
             WriteSingleCharLine('-');
         }
+    }
+
+    public static string PromptProjectName(string[] projectNames)
+    {
+        ArgumentNullException.ThrowIfNull(projectNames);
+
+        return AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title("Select project")
+            .AddChoices(projectNames));
     }
 
     public static void StartedEntry(TimeEntry entry)

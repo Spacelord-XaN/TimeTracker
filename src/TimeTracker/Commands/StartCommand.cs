@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using Microsoft.EntityFrameworkCore;
 using Xan.TimeTracker.Data;
 using Xan.TimeTracker.Models;
 
@@ -8,30 +9,29 @@ public static class StartCommand
 {
     public static Command Build()
     {
-        Argument<string> projectNameArgument = new("projectName");
+        Option<string?> projectNameOption = new("--project");
+        projectNameOption.AddAlias("-p");
+        Option<string?> commentOption = new("--comment");
+        commentOption.AddAlias("-c");
         Option<DateOnly?> dateOption = new("--date");
         dateOption.AddAlias("-d");
         Option<TimeOnly?> timeOption = new("--time");
         timeOption.AddAlias("-t");
-        Option<string?> commentOption = new("--comment");
-        commentOption.AddAlias("-c");
 
         Command cmd = new("start")
         {
-            projectNameArgument,
+            projectNameOption,
+            commentOption,
             dateOption,
-            timeOption,
-            commentOption
+            timeOption
         };
-        cmd.SetHandler(StartAsync, projectNameArgument, dateOption, timeOption, commentOption);
+        cmd.SetHandler(StartAsync, projectNameOption, dateOption, timeOption, commentOption);
 
         return cmd;
     }
 
-    private static async Task StartAsync(string projectName, DateOnly? date, TimeOnly? time, string? comment)
+    private static async Task StartAsync(string? projectName, DateOnly? date, TimeOnly? time, string? comment)
     {
-        ArgumentNullException.ThrowIfNull(projectName);
-
         TimeTrackerDb db = await Helpers.GetDbAsync();
         if (await db.IsRunningAsync())
         {
@@ -39,11 +39,24 @@ public static class StartCommand
             return;
         }
 
+        string project;
+        if (projectName is null)
+        {
+            string[] projectNames = await db.Entries.Select(entry => entry.ProjectName)
+                .Distinct().OrderBy(name => name)
+                .ToArrayAsync();
+            project = ConsoleUi.PromptProjectName(projectNames);
+        }
+        else
+        {
+            project = projectName;
+        }
+
         DateTime timestamp = Helpers.GetTimestamp(date, time);
         TimeEntry entry = new()
         {
             Comment = comment,
-            ProjectName = projectName,
+            ProjectName = project,
             Start = timestamp
         };
 
