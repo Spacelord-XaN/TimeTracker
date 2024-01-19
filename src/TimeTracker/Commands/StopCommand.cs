@@ -12,18 +12,21 @@ public static class StopCommand
         dateOption.AddAlias("-d");
         Option<TimeOnly?> timeOption = new("--time");
         timeOption.AddAlias("-t");
+        Option<string?> commentOption = new("--comment");
+        commentOption.AddAlias("-c");
 
         Command cmd = new("stop")
         {
             dateOption,
-            timeOption
+            timeOption,
+            commentOption
         };
-        cmd.SetHandler(StatusAsync, dateOption, timeOption);
+        cmd.SetHandler(StatusAsync, dateOption, timeOption, commentOption);
 
         return cmd;
     }
 
-    private static async Task StatusAsync(DateOnly? date, TimeOnly? time)
+    private static async Task StatusAsync(DateOnly? date, TimeOnly? time, string? comment)
     {
         TimeTrackerDb db = await Helpers.GetDbAsync();
         if (await db.IsRunningAsync())
@@ -33,6 +36,10 @@ public static class StopCommand
             TimeEntry entry = await db.GetRunningAsync();
 
             entry.End = timestamp;
+            if (comment is not null)
+            {
+                entry.Comment = comment;
+            }
             await db.SaveChangesAsync();
 
             ConsoleUi.StoppedEntry(entry);
