@@ -119,7 +119,7 @@ public class ConsoleUi
         Console.WriteLine($"Start: {entry.Start}");
         if (entry.Comment is not null)
         {
-            Console.WriteLine($": {entry.Comment}");
+            Console.WriteLine($" {entry.Comment}");
         }
     }
 
