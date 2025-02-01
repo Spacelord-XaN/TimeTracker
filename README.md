@@ -3,11 +3,12 @@ A small C# console application for simple time tracking
 
 ## Usage
 ```
-tt start <projectName> -d YYYY-MM-DD -t hh:mm[:ss] -c <comment>
+tt start -p <projectName> -d YYYY-MM-DD -t hh:mm[:ss] -c <comment>
 ```
 Starts tracking a new project with the given name and the specified date and time and comment.
 \
-The -d, -t and -c parameters are optional.
+The -d, -t and -p parameters are optional.
+If the -p parameter is not provided an interactive selection for the project is launched.
 
 ```
 tt stop -d YYYY-MM-DD -t hh:mm[:ss]
