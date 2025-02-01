@@ -57,7 +57,7 @@ public class TimeTrackerDb
                     List<Duration> commentDetails = new();
                     TimeSpan commentTotalDuration = TimeSpan.Zero;
 
-                    foreach (TimeEntry entry in commentGroup)
+                    foreach (TimeEntry entry in commentGroup.OrderBy(g => g.Start))
                     {
                         TimeOnly start = TimeOnly.FromDateTime(entry.Start);
                         TimeOnly? end = null;

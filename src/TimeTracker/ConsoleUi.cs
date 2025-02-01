@@ -30,9 +30,9 @@ public class ConsoleUi
     {
         ArgumentNullException.ThrowIfNull(details);
 
+        Console.Write("Range:");
         if (from.HasValue || to.HasValue)
         {
-            Console.Write("Range:");
             if (from.HasValue)
             {
                 Console.Write($" from {from.Value:f}");
@@ -40,10 +40,14 @@ public class ConsoleUi
             if (to.HasValue)
             {
                 Console.Write($" to {to.Value:f}");
-            }
-            Console.WriteLine();
-            Console.WriteLine();
+            }            
         }
+        else
+        {
+            Console.Write(" All");
+        }
+
+        Console.WriteLine();
 
         bool firstDay = true;
         foreach (DaySummary daySummary in details.DaySummaries)
@@ -56,21 +60,53 @@ public class ConsoleUi
             {
                 Console.WriteLine();
             }
+            WriteSingleCharLine('-');
 
             Console.WriteLine($"{daySummary.Date} => {daySummary.TotalDuration.Hours:00}:{daySummary.TotalDuration.Minutes:00} or {daySummary.TotalDuration.TotalHours:0.00} h");
+            bool firstProject = true;
+
             foreach (ProjectSummary projectSummary in daySummary.Projects)
             {
+                if (firstProject)
+                {
+                    firstProject = false;
+                }
+                else
+                {
+                    Console.WriteLine();
+                }
+
                 Console.WriteLine($"  {projectSummary.Name} => {projectSummary.TotalDuration.Hours:00}:{projectSummary.TotalDuration.Minutes:00} or {projectSummary.TotalDuration.TotalHours:0.00} h");
+                bool firstComment = true;
                 foreach (CommentSummary commentSummary in projectSummary.Details)
                 {
+                    if (firstComment)
+                    {
+                        firstComment = false;
+                    }
+                    else
+                    {
+                        Console.WriteLine();
+                    }
+
                     string commentPart = "";
                     if (!string.IsNullOrEmpty(commentSummary.Comment))
                     {
                         commentPart = $"{commentSummary.Comment} => ";
                     }
                     Console.WriteLine($"    {commentPart}{commentSummary.TotalDuration.Hours:00}:{commentSummary.TotalDuration.Minutes:00} or {commentSummary.TotalDuration.TotalHours:0.00} h");
+                    bool firstDuration = true;
                     foreach (Duration duration in commentSummary.Details)
                     {
+                        if (firstDuration)
+                        {
+                            firstDuration = false;
+                        }
+                        else
+                        {
+                            Console.WriteLine();
+                        }
+
                         Console.Write("      ");
                         if (duration.End.HasValue)
                         {
@@ -84,14 +120,13 @@ public class ConsoleUi
                         if (duration.Comment is not null)
                         {
                             Console.Write($": {duration.Comment}");
-                        }
-                        Console.WriteLine();
+                        }                        
                     }
                 }
-                Console.WriteLine();
             }
-            WriteSingleCharLine('-');
         }
+
+        Console.WriteLine();
     }
 
     public static string PromptProjectName(string[] projectNames)
