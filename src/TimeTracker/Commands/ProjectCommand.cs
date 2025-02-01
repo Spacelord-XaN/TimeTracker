@@ -72,7 +72,7 @@ public static class ProjectCommand
                 .OrderBy(project => project)
                 .ToArrayAsync();
 
-            result = new List<ListProjectsModel>(projects.Select(projectName => new ListProjectsModel(projectName, Array.Empty<string>())));
+            result = new List<ListProjectsModel>(projects.Select(name => new ListProjectsModel(name, Array.Empty<string>())));
         }
 
         ConsoleUi.ListProjects(result);
